@@ -4,8 +4,10 @@ import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+
+import android.os.Build;
 import android.util.Log;
 
 import com.eddieowens.receivers.BoundaryEventBroadcastReceiver;
@@ -135,8 +137,9 @@ public class RNBoundaryModule extends ReactContextBaseJavaModule implements Life
             return mBoundaryPendingIntent;
         }
         Intent intent = new Intent(getReactApplicationContext(), BoundaryEventBroadcastReceiver.class);
-        mBoundaryPendingIntent = PendingIntent.getBroadcast(getReactApplicationContext(), 0, intent, PendingIntent.
-                FLAG_UPDATE_CURRENT);
+
+      final int flag =  Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE : PendingIntent.FLAG_UPDATE_CURRENT;
+      mBoundaryPendingIntent = PendingIntent.getBroadcast(getReactApplicationContext(), 0, intent, PendingIntent.FLAG_MUTABLE);
         return mBoundaryPendingIntent;
     }
 
@@ -152,6 +155,8 @@ public class RNBoundaryModule extends ReactContextBaseJavaModule implements Life
         if (permission != PackageManager.PERMISSION_GRANTED) {
             promise.reject("PERM", "Access fine location is not permitted");
         } else {
+          Log.i(TAG, "Add geofence called..." );
+          Log.i(TAG,geofencingRequest.toString());
             mGeofencingClient.addGeofences(
                     geofencingRequest,
                     getBoundaryPendingIntent()
